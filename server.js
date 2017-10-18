@@ -21,5 +21,19 @@ app.get('/', (req, res) => {
     res.send(`Hello! The api is running at http://localhost:${port}/api`);
 });
 
+app.get('/setup', (req, res) => {
+    let mrt = new User({
+        name: 'Mrt',
+        password: 'mrt',
+        admin: true
+    });
+
+    mrt.save((err) => {
+        if (err) throw err;
+        console.log(`User saved successfully`);
+        res.json({ success: true});
+    });
+});
+
 app.listen(port);
 console.log(`Magic happening at http://localhost:${port}`);

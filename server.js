@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
     res.send(`Hello! The api is running at http://localhost:${port}/api`);
 });
 
-app.get('/setup', (req, res) => {
+/* app.get('/setup', (req, res) => {
     let mrt = new User({
         name: 'Mrt',
         password: 'mrt',
@@ -33,19 +33,9 @@ app.get('/setup', (req, res) => {
         console.log(`User saved successfully`);
         res.json({ success: true});
     });
-});
+}); */
 
 let apiRoutes = express.Router();
-
-apiRoutes.get('/', (req, res) => {
-    res.json('Welcome to API');
-});
-
-apiRoutes.get('/users', (req, res) => {
-    User.find({}, (err, users) => {
-        res.json(users);
-    });
-});
 
 apiRoutes.post('/authenticate', (req, res) => {
     User.findOne({
@@ -74,6 +64,38 @@ apiRoutes.post('/authenticate', (req, res) => {
             }
         }
     })
+});
+
+apiRoutes.use((req, res, next) => {
+    let token = req.body.token || req.query.token || req.headers['x-access-token'];
+
+    console.log(token);
+
+    if(token) {
+        jwt.verify(token, app.get('superSecret'), (err, decoded) => {
+            if (err) {
+                return res.json({ success: false, message: 'Failed to authenticate token!' });
+            } else {
+                req.decoded = decoded;
+                next();
+            }
+        });
+    } else {
+        return res.status(403).send( {
+            success: false,
+            message: 'No token provided'
+        });
+    }
+});
+
+apiRoutes.get('/', (req, res) => {
+    res.json('Welcome to API');
+});
+
+apiRoutes.get('/users', (req, res) => {
+    User.find({}, (err, users) => {
+        res.json(users);
+    });
 });
 
 app.use('/api', apiRoutes);

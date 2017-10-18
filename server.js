@@ -35,5 +35,19 @@ app.get('/setup', (req, res) => {
     });
 });
 
+let apiRoutes = express.Router();
+
+apiRoutes.get('/', (req, res) => {
+    res.json('Welcome to API');
+});
+
+apiRoutes.get('/users', (req, res) => {
+    User.find({}, (err, users) => {
+        res.json(users);
+    });
+});
+
+app.use('/api', apiRoutes);
+
 app.listen(port);
 console.log(`Magic happening at http://localhost:${port}`);

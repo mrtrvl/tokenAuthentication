@@ -10,7 +10,7 @@ let User = require('./app/models/userModel')
 
 const port = 8080;
 mongoose.connect(config.database);
-//app.set('superSecret', config.secret);
+app.set('superSecret', config.secret);
 
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
@@ -45,6 +45,35 @@ apiRoutes.get('/users', (req, res) => {
     User.find({}, (err, users) => {
         res.json(users);
     });
+});
+
+apiRoutes.post('/authenticate', (req, res) => {
+    User.findOne({
+        name: req.body.name
+    }, (err, user) => {
+        if (err) throw err;
+        if (!user) {
+            res.json({ success: false, message: `Authentication failed. User ${req.body.name} not found!` });
+        } else if (user) {
+            if (user.password != req.body.password) {
+                res.json( { success: false, message: 'Authentication failed. Wrong password!' });
+            } else {
+                const payload = {
+                    admin: user.admin
+                };
+
+                let token = jwt.sign(payload, app.get('superSecret'), {
+                    expiresIn: 1440
+                });
+
+                res.json({
+                    success: true,
+                    message: 'Enjoy Your token!',
+                    token: token
+                });
+            }
+        }
+    })
 });
 
 app.use('/api', apiRoutes);

@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 const morgan = require('morgan');
-let mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 let jwt = require('jsonwebtoken');
 let config = require('./config');
@@ -53,7 +53,7 @@ apiRoutes.post('/authenticate', (req, res) => {
                 };
 
                 let token = jwt.sign(payload, app.get('superSecret'), {
-                    expiresIn: 1440
+                    expiresIn: 60*60*24 //24 hours in seconds
                 });
 
                 res.json({
@@ -63,13 +63,11 @@ apiRoutes.post('/authenticate', (req, res) => {
                 });
             }
         }
-    })
+    });
 });
 
 apiRoutes.use((req, res, next) => {
     let token = req.body.token || req.query.token || req.headers['x-access-token'];
-
-    console.log(token);
 
     if(token) {
         jwt.verify(token, app.get('superSecret'), (err, decoded) => {
